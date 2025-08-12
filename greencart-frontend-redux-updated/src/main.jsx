@@ -6,7 +6,6 @@ import App from './App'
 import store from './store'
 import './styles.css'
 
-// Token restore on app load
 const token = localStorage.getItem('greencart_token')
 if (token) {
   store.dispatch({ type: 'AUTH_LOGIN_SUCCESS', payload: { token, user: null } })

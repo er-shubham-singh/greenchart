@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoading } from './store/LoaderSlice'; // <-- your loader actions
+import { setLoading } from './store/LoaderSlice'; 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Simulation from './pages/Simulation';
@@ -18,10 +18,8 @@ export default function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Show loader immediately on route change
     dispatch(setLoading(true));
 
-    // Simulate load completion after a short delay
     const timer = setTimeout(() => {
       dispatch(setLoading(false));
     }, 500);

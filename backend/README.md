@@ -17,3 +17,7 @@ POST `/api/simulate` (protected)
 
 ## Tests
 `npm test` runs unit tests (jest). Tests mock Mongoose models for simulation logic.
+
+## Tests  Credential login toenter
+    email: 'admin@example.com',
+    password: '123456',

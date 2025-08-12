@@ -1,52 +1,17 @@
-// import React, { useState } from 'react'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { runSimulation } from '../actions/simulationActions'
-
-// export default function Simulation() {
-//   const dispatch = useDispatch()
-//   const sim = useSelector(s=>s.simulation)
-//   const [numberOfDrivers, setNumberOfDrivers] = useState(6)
-//   const [start_time, setStartTime] = useState('09:00')
-//   const [max_hours, setMaxHours] = useState(8)
-
-//   const handle = async (e) => {
-//     e.preventDefault()
-//     try { await dispatch(runSimulation({ numberOfDrivers, start_time, max_hours_per_driver: max_hours })) }
-//     catch (err) { alert('Simulation failed: '+err.message) }
-//   }
-
-//   return (
-//     <div>
-//       <h1 className='text-xl font-bold mb-4'>Run Simulation</h1>
-//       <form className='bg-white p-4 rounded shadow max-w-md' onSubmit={handle}>
-//         <label className='block mb-2'>Number of Drivers<input type='number' className='w-full border p-2' value={numberOfDrivers} onChange={e=>setNumberOfDrivers(Number(e.target.value))} /></label>
-//         <label className='block mb-2'>Start Time<input className='w-full border p-2' value={start_time} onChange={e=>setStartTime(e.target.value)} /></label>
-//         <label className='block mb-4'>Max Hours per Driver<input type='number' className='w-full border p-2' value={max_hours} onChange={e=>setMaxHours(Number(e.target.value))} /></label>
-//         <button className='bg-green-600 text-white p-2 rounded'>Run</button>
-//       </form>
-
-//       <div className='mt-6'>
-//         <h2 className='font-semibold'>Latest Simulation</h2>
-//         <pre className='bg-white p-4 rounded mt-2'>{JSON.stringify(sim.latest, null, 2)}</pre>
-//       </div>
-//     </div>
-//   )
-// }
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { runSimulation } from '../actions/simulationActions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons';
-import Modal from '../components/Modal'; // Assuming a Modal component with close icon and blurred background
-
+import Modal from '../components/Modal'; 
 export default function Simulation() {
   const dispatch = useDispatch();
   const { latest, loading, error } = useSelector((s) => s.simulation);
   const [numberOfDrivers, setNumberOfDrivers] = useState(6);
   const [startTime, setStartTime] = useState('09:00');
   const [maxHours, setMaxHours] = useState(8);
-  const [isResultsModalOpen, setIsResultsModalOpen] = useState(false); // State for the results modal
+  const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
 
   const handleRunSimulation = async (e) => {
     e.preventDefault();
@@ -58,10 +23,8 @@ export default function Simulation() {
           max_hours_per_driver: maxHours,
         })
       );
-      // Open the modal automatically on successful simulation
       setIsResultsModalOpen(true);
     } catch (err) {
-      // The error is handled by the Redux state, but a local alert can be a fallback
       alert(`Simulation failed: ${err.message}`);
     }
   };

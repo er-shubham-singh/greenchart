@@ -1,4 +1,3 @@
-// src/reducers/loaderReducer.js
 import { SHOW_LOADER, HIDE_LOADER } from '../actions/LoaderAction';
 
 const initialState = { loading: false };

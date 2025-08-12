@@ -86,12 +86,11 @@ export const runSimulation = async ({ numberOfDrivers, start_time, max_hours_per
     }
     
 if (!chosenDriver) {
-  // Assign to the driver with the most remaining time anyway (late delivery)
   const fallbackDriver = ds[0];
   const multiplier = fallbackDriver.fatigued ? 1.3 : 1;
   const adjustedTime = Math.ceil(order.base_time_min * multiplier);
 
-  fallbackDriver.remaining_minutes -= adjustedTime; // may go negative
+  fallbackDriver.remaining_minutes -= adjustedTime; 
   const assign = {
     order_id: order.order_id,
     driver_id: fallbackDriver.id,
@@ -101,7 +100,7 @@ if (!chosenDriver) {
     distance_km: order.distance_km,
     traffic_level: order.traffic_level,
     value_rs: order.value_rs,
-    late: true // new flag
+    late: true 
   };
   fallbackDriver.assignments.push(assign);
   assignments.push(assign);

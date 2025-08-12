@@ -12,15 +12,13 @@ export default function Orders() {
   const [editingOrder, setEditingOrder] = useState(null);
   const [form, setForm] = useState({ order_id: '', value_rs: 0, route_id: '', delivery_time: '' });
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7; // Changed to show 7 items per page
+  const itemsPerPage = 7; 
 
   useEffect(() => {
     dispatch(fetchOrders());
   }, [dispatch]);
 
-  // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
@@ -67,10 +65,8 @@ export default function Orders() {
         await dispatch(addOrder(payload));
       }
       closeModal();
-      // Reset to the first page after adding a new item
       if (!editingOrder) setCurrentPage(1); 
     } catch (err) {
-      // The error is now handled by the Redux state, but a local alert can still be useful.
       alert('Operation failed. Please check the data and try again.');
     }
   };
@@ -80,7 +76,6 @@ export default function Orders() {
       try {
         await dispatch(deleteOrder(orderId));
       } catch (err) {
-        // The error is now handled by the Redux state, but a local alert can still be useful.
         alert('Failed to delete order.');
       }
     }

@@ -1,4 +1,3 @@
-// components/LoaderOverlay.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
