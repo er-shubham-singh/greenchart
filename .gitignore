@@ -1,0 +1,28 @@
+# Root
+.env
+.DS_Store
+
+# Node modules
+**/node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor folders
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+
+# Build output
+**/build/
+**/dist/
+
+# Optional: ignore local db and uploads
+backend/uploads/
+backend/data/
