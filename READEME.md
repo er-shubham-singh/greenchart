@@ -25,3 +25,22 @@ It connects to the GreenCart backend API for driver, route, order, and simulatio
 ```bash
 git clone https://github.com/your-username/greencart-frontend.git
 cd greencart-frontend
+
+
+# 1. Clone the repository
+git clone https://github.com/your-username/greencart.git
+cd greencart/frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Create a .env file
+# Example:
+VITE_API_URL=https://greenchart.onrender.com
+
+# 4. Start the development server
+npm run dev
+
+# 4. Vercel link
+
+

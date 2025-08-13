@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '../actions/authActions';
@@ -13,7 +12,8 @@ import {
   faBars,
   faTimes,
 } from '@fortawesome/free-solid-svg-icons';
-import {showLoader, hideLoader} from '../actions/LoaderAction'
+// showLoader and hideLoader are no longer needed here,
+// as the loader can be managed at a higher level or within individual pages.
 
 export default function Layout() {
   const dispatch = useDispatch();
@@ -30,22 +30,20 @@ export default function Layout() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
-  useEffect(() => {
-    dispatch(showLoader());
-    const timer = setTimeout(() => dispatch(hideLoader()), 500); // simulate small delay
-    return () => clearTimeout(timer);
-  }, [location.pathname, dispatch]);
-
-
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-200">
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-3 text-white bg-gray-800 rounded-full shadow-md"
-        onClick={toggleSidebar}
-      >
-        <FontAwesomeIcon icon={isSidebarOpen ? faTimes : faBars} size="lg" />
-      </button>
+    <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-gray-200">
+      {/* Mobile Menu Button & Brand Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-gray-900 z-50 flex items-center px-4">
+        <button
+          className="p-2 text-white bg-gray-800 rounded-full"
+          onClick={toggleSidebar}
+        >
+          <FontAwesomeIcon icon={isSidebarOpen ? faTimes : faBars} size="lg" />
+        </button>
+        <h2 className="text-xl font-bold text-green-400 tracking-wide ml-4">
+          GreenCart
+        </h2>
+      </div>
 
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -64,40 +62,38 @@ export default function Layout() {
         flex flex-col justify-between p-6
         z-40 transition-transform duration-300 ease-in-out shadow-xl`}
       >
-        {/* Brand */}
-        <div>
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-bold text-green-400 tracking-wide">
-              GreenCart
-            </h2>
-          </div>
-
-          {/* Navigation */}
-          <nav className="space-y-2">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.to;
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center space-x-3 p-3 rounded-lg font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-green-400'
-                  }`}
-                  onClick={closeSidebar}
-                >
-                  <FontAwesomeIcon icon={link.icon} className="w-5" />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+        {/* Brand - visible only on desktop */}
+        <div className="hidden md:flex items-center justify-between mb-10">
+          <h2 className="text-2xl font-bold text-green-400 tracking-wide">
+            GreenCart
+          </h2>
         </div>
+
+        {/* Navigation */}
+        <nav className="space-y-2 mt-16 md:mt-0">
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.to;
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`flex items-center space-x-3 p-3 rounded-lg font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-green-400'
+                }`}
+                onClick={closeSidebar}
+              >
+                <FontAwesomeIcon icon={link.icon} className="w-5" />
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Logout */}
         <button
-          className="flex items-center space-x-3 p-3 rounded-lg text-red-400 hover:bg-gray-700 transition-colors duration-200"
+          className="flex items-center space-x-3 p-3 rounded-lg text-red-400 hover:bg-gray-700 transition-colors duration-200 mt-auto"
           onClick={() => {
             dispatch(logout());
             closeSidebar();
@@ -109,7 +105,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen overflow-y-auto px-4 sm:px-6 md:px-8 bg-gray-900">
+      <main className="flex-1 min-h-screen overflow-y-auto px-4 sm:px-6 md:px-8 bg-gray-900 pt-16 md:pt-0">
         <Outlet />
       </main>
     </div>

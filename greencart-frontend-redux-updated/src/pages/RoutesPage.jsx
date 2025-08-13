@@ -1,228 +1,220 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrders, addOrder, updateOrder, deleteOrder } from '../actions/ordersActions';
-import Modal from '../components/Modal';
+import { fetchRoutes, addRoute, updateRoute, deleteRoute } from '../actions/routesActions';
+import Modal from '../components/Modal'; // Assuming Modal is styled to fit the new theme
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt, faPlus, faSpinner, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-export default function Orders() {
+export default function RoutesPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const dispatch = useDispatch();
-  const { items, status, error } = useSelector((s) => s.orders);
+  const { items, status, error } = useSelector((s) => s.routes);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingOrder, setEditingOrder] = useState(null);
-  const [form, setForm] = useState({ order_id: '', value_rs: 0, route_id: '', delivery_time: '' });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7; 
+  const [editingRoute, setEditingRoute] = useState(null);
+  const [form, setForm] = useState({ route_id: '', distance_km: 0, traffic_level: 'Low', base_time_min: 0 });
 
   useEffect(() => {
-    dispatch(fetchOrders());
+    dispatch(fetchRoutes());
   }, [dispatch]);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(items.length / itemsPerPage);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
   const openAddModal = () => {
-    setEditingOrder(null);
-    setForm({ order_id: '', value_rs: 0, route_id: '', delivery_time: '' });
+    setEditingRoute(null);
+    setForm({ route_id: '', distance_km: 0, traffic_level: 'Low', base_time_min: 0 });
     setIsModalOpen(true);
   };
-
-  const openEditModal = (order) => {
-    setEditingOrder(order);
+  
+  const openEditModal = (route) => {
+    setEditingRoute(route);
     setForm({
-      order_id: order.order_id,
-      value_rs: order.value_rs,
-      route_id: order.route_id,
-      delivery_time: order.delivery_time_raw || '',
+      route_id: route.route_id,
+      distance_km: route.distance_km,
+      traffic_level: route.traffic_level,
+      base_time_min: route.base_time_min,
     });
     setIsModalOpen(true);
   };
   
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingOrder(null);
+    setEditingRoute(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      order_id: Number(form.order_id),
-      value_rs: Number(form.value_rs),
-      route_id: Number(form.route_id),
-      delivery_time: form.delivery_time,
-    };
-    try {
-      if (editingOrder) {
-        await dispatch(updateOrder(form.order_id, payload));
-      } else {
-        await dispatch(addOrder(payload));
-      }
-      closeModal();
-      if (!editingOrder) setCurrentPage(1); 
-    } catch (err) {
-      alert('Operation failed. Please check the data and try again.');
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  const payload = {
+    route_id: Number(form.route_id),
+    distance_km: Number(form.distance_km),
+    traffic_level: form.traffic_level,
+    base_time_min: Number(form.base_time_min),
   };
+
+  try {
+    if (editingRoute) {
+      await dispatch(updateRoute(form.route_id, payload));
+      toast.success(`Route ${form.route_id} updated successfully!`);
+    } else {
+      await dispatch(addRoute(payload));
+      toast.success('New route added successfully!');
+    }
+    closeModal();
+  } catch (err) {
+    toast.error('Operation failed. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   
-  const handleDelete = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
-      try {
-        await dispatch(deleteOrder(orderId));
-      } catch (err) {
-        alert('Failed to delete order.');
-      }
+const handleDelete = async (routeId) => {
+  if (window.confirm('Are you sure you want to delete this route?')) {
+    try {
+      await dispatch(deleteRoute(routeId));
+      toast.success(`Route ${routeId} deleted successfully.`);
+    } catch (err) {
+      toast.error('Failed to delete route.');
     }
-  };
+  }
+};
+
 
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-8'>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+
       <div className='max-w-4xl mx-auto'>
         <div className='flex justify-between items-center mb-6'>
-          <h1 className='text-3xl font-bold'>Orders Management</h1>
+          <h1 className='text-3xl font-bold'>Routes Management</h1>
           <button
             onClick={openAddModal}
             className='bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2'
           >
             <FontAwesomeIcon icon={faPlus} />
-            <span>Add Order</span>
+            <span>Add Route</span>
           </button>
         </div>
 
-        {/* Orders List */}
+        {/* Routes List */}
         <div className='bg-gray-800 p-6 rounded-xl shadow-lg'>
           {status === 'loading' && (
             <div className='flex justify-center items-center py-8'>
               <FontAwesomeIcon icon={faSpinner} spin size='2x' className='text-green-500' />
-              <span className='ml-4 text-gray-400'>Loading orders...</span>
+              <span className='ml-4 text-gray-400'>Loading routes...</span>
             </div>
           )}
           {status === 'succeeded' && items.length > 0 && (
-            <>
-              <ul className='divide-y divide-gray-700'>
-                {currentItems.map((o) => (
-                  <li
-                    key={o.order_id}
-                    className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-2 sm:space-y-0'
-                  >
-                    <span className='text-gray-300 font-medium'>
-                      <span className='text-green-400'>Order {o.order_id}</span> — ₹{o.value_rs}
-                    </span>
-                    <div className='space-x-2'>
-                      <button
-                        onClick={() => openEditModal(o)}
-                        className='text-blue-400 p-2 rounded-full hover:bg-gray-700 transition-colors duration-200'
-                        aria-label={`Edit order ${o.order_id}`}
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(o.order_id)}
-                        className='text-red-400 p-2 rounded-full hover:bg-gray-700 transition-colors duration-200'
-                        aria-label={`Delete order ${o.order_id}`}
-                      >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Pagination controls */}
-              <div className='flex justify-center items-center mt-6 space-x-2'>
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className='p-2 rounded-full text-gray-400 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
+            <ul className='divide-y divide-gray-700'>
+              {items.map((r) => (
+                <li
+                  key={r.route_id}
+                  className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-2 sm:space-y-0'
                 >
-                  <FontAwesomeIcon icon={faChevronLeft} />
-                </button>
-                <span className='px-4 py-2 bg-gray-700 text-green-400 rounded-lg font-bold'>
-                  {currentPage}
-                </span>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className='p-2 rounded-full text-gray-400 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                >
-                  <FontAwesomeIcon icon={faChevronRight} />
-                </button>
-              </div>
-            </>
+                  <span className='text-gray-300 font-medium'>
+                    <span className='text-green-400'>Route {r.route_id}</span> — {r.distance_km} km ({r.traffic_level})
+                  </span>
+                  <div className='space-x-2'>
+                    <button
+                      onClick={() => openEditModal(r)}
+                      className='text-blue-400 p-2 rounded-full hover:bg-gray-700 transition-colors duration-200'
+                      aria-label={`Edit route ${r.route_id}`}
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(r.route_id)}
+                      className='text-red-400 p-2 rounded-full hover:bg-gray-700 transition-colors duration-200'
+                      aria-label={`Delete route ${r.route_id}`}
+                    >
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
           {status === 'succeeded' && items.length === 0 && (
-            <p className='text-center text-gray-400 py-8'>No orders found. Click "Add Order" to create one.</p>
+            <p className='text-center text-gray-400 py-8'>No routes found. Click "Add Route" to create one.</p>
           )}
           {status === 'failed' && (
-            <p className='text-center text-red-500 py-8'>Failed to load orders: {error}</p>
+            <p className='text-center text-red-500 py-8'>Failed to load routes: {error}</p>
           )}
         </div>
       </div>
 
       {/* Modal for Add/Edit Form */}
-      <Modal open={isModalOpen} title={editingOrder ? 'Edit Order' : 'Add New Order'} onClose={closeModal}>
+      <Modal open={isModalOpen} title={editingRoute ? 'Edit Route' : 'Add New Route'} onClose={closeModal}>
         <form onSubmit={handleSubmit} className='space-y-4'>
-          <div>
-            <label htmlFor='order_id' className='block text-gray-400 font-medium mb-1'>
-              Order ID
-            </label>
-            <input
-              id='order_id'
-              className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
-              value={form.order_id}
-              onChange={(e) => setForm({ ...form, order_id: e.target.value })}
-              readOnly={!!editingOrder}
-            />
-          </div>
-          <div>
-            <label htmlFor='value_rs' className='block text-gray-400 font-medium mb-1'>
-              Value (₹)
-            </label>
-            <input
-              id='value_rs'
-              type='number'
-              className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
-              value={form.value_rs}
-              onChange={(e) => setForm({ ...form, value_rs: e.target.value })}
-            />
-          </div>
           <div>
             <label htmlFor='route_id' className='block text-gray-400 font-medium mb-1'>
               Route ID
             </label>
             <input
               id='route_id'
-              type='number'
               className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
               value={form.route_id}
               onChange={(e) => setForm({ ...form, route_id: e.target.value })}
+              readOnly={!!editingRoute} // Make ID read-only when editing
             />
           </div>
           <div>
-            <label htmlFor='delivery_time' className='block text-gray-400 font-medium mb-1'>
-              Delivery Time (e.g., 1:20)
+            <label htmlFor='distance_km' className='block text-gray-400 font-medium mb-1'>
+              Distance (km)
             </label>
             <input
-              id='delivery_time'
-              type='text'
+              id='distance_km'
+              type='number'
               className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
-              value={form.delivery_time}
-              onChange={(e) => setForm({ ...form, delivery_time: e.target.value })}
+              value={form.distance_km}
+              onChange={(e) => setForm({ ...form, distance_km: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor='traffic_level' className='block text-gray-400 font-medium mb-1'>
+              Traffic Level
+            </label>
+            <select
+              id='traffic_level'
+              className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
+              value={form.traffic_level}
+              onChange={(e) => setForm({ ...form, traffic_level: e.target.value })}
+            >
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor='base_time_min' className='block text-gray-400 font-medium mb-1'>
+              Base Time (min)
+            </label>
+            <input
+              id='base_time_min'
+              type='number'
+              className='w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500'
+              value={form.base_time_min}
+              onChange={(e) => setForm({ ...form, base_time_min: e.target.value })}
             />
           </div>
           <div className='flex justify-end pt-4'>
-            <button
-              type='submit'
-              className='bg-green-600 text-white font-bold px-6 py-3 rounded-md hover:bg-green-700 transition-colors duration-200'
-            >
-              {editingOrder ? 'Update Order' : 'Add Order'}
-            </button>
+<button
+  type='submit'
+  disabled={isSubmitting}
+  className={`bg-green-600 text-white font-bold px-6 py-3 rounded-md transition-colors duration-200 ${
+    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+  }`}
+>
+  {isSubmitting
+    ? editingRoute
+      ? 'Updating...'
+      : 'Submitting...'
+    : editingRoute
+    ? 'Update Route'
+    : 'Add Route'}
+</button>
+
           </div>
         </form>
       </Modal>

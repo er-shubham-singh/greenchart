@@ -5,6 +5,8 @@ import { fetchOrders, addOrder, updateOrder, deleteOrder } from '../actions/orde
 import Modal from '../components/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt, faPlus, faSpinner, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -53,40 +55,52 @@ export default function Orders() {
     setEditingOrder(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      order_id: Number(form.order_id),
-      value_rs: Number(form.value_rs),
-      route_id: Number(form.route_id),
-      delivery_time: form.delivery_time,
-    };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  const payload = {
+    order_id: Number(form.order_id),
+    value_rs: Number(form.value_rs),
+    route_id: Number(form.route_id),
+    delivery_time: form.delivery_time,
+  };
+
+  try {
+    if (editingOrder) {
+      await dispatch(updateOrder(form.order_id, payload));
+      toast.success(`Order ${form.order_id} updated!`);
+    } else {
+      await dispatch(addOrder(payload));
+      toast.success('New order added!');
+      setCurrentPage(1);
+    }
+    closeModal();
+  } catch (err) {
+    toast.error('Operation failed. Check the data.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const handleDelete = async (orderId) => {
+  if (window.confirm('Are you sure you want to delete this order?')) {
     try {
-      if (editingOrder) {
-        await dispatch(updateOrder(form.order_id, payload));
-      } else {
-        await dispatch(addOrder(payload));
-      }
-      closeModal();
-      // Reset to the first page after adding a new item
-      if (!editingOrder) setCurrentPage(1); 
+      await dispatch(deleteOrder(orderId));
+      toast.success(`Order ${orderId} deleted.`);
     } catch (err) {
-      alert('Operation failed. Please check the data and try again.');
+      toast.error('Failed to delete order.');
     }
-  };
-  
-  const handleDelete = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
-      try {
-        await dispatch(deleteOrder(orderId));
-      } catch (err) {
-        alert('Failed to delete order.');
-      }
-    }
-  };
+  }
+};
+
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-8'>
+      <ToastContainer position="top-right" autoClose={3000} />
+
       <div className='max-w-4xl mx-auto'>
         <div className='flex justify-between items-center mb-6'>
           <h1 className='text-3xl font-bold'>Orders Management</h1>
@@ -221,12 +235,22 @@ export default function Orders() {
             />
           </div>
           <div className='flex justify-end pt-4'>
-            <button
-              type='submit'
-              className='bg-green-600 text-white font-bold px-6 py-3 rounded-md hover:bg-green-700 transition-colors duration-200'
-            >
-              {editingOrder ? 'Update Order' : 'Add Order'}
-            </button>
+<button
+  type="submit"
+  disabled={isSubmitting}
+  className={`bg-green-600 text-white font-bold px-6 py-3 rounded-md transition-colors duration-200 ${
+    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+  }`}
+>
+  {isSubmitting
+    ? editingOrder
+      ? 'Updating...'
+      : 'Adding...'
+    : editingOrder
+    ? 'Update Order'
+    : 'Add Order'}
+</button>
+
           </div>
         </form>
       </Modal>
